@@ -37,6 +37,7 @@ jobs:
             PHP_VERSION=${{ inputs.php-version }}
           target: base
           outputs: type=image,name=${{ vars.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       
       - uses: docker/build-push-action@v6
         id: build-devenv
@@ -45,6 +46,7 @@ jobs:
             PHP_VERSION=${{ inputs.php-version }}
           target: devenv
           outputs: type=image,name=${{ vars.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=local,src=/tmp/.buildx-cache
 
       - name: Export digest
         run: |
@@ -130,19 +132,15 @@ jobs:
       - name: Create and push manifest
         working-directory: /tmp/digests
         run: |
-          while IFS= read -r tag; do
-            docker buildx imagetools create $tag \
-              $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
-          done <<< "$TAGS"
+          docker buildx imagetools create $(echo "$TAGS" | awk '{print "-t "$0}' | paste -sd' ' -) \
+            $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
         env:
-          TAGS: ${{ steps.versions.meta.tags }}
+          TAGS: ${{ steps.meta.outputs.tags }}
       
       - name: Create and push manifest (devenv)
         working-directory: /tmp/digests-devenv
         run: |
-          while IFS= read -r tag; do
-            docker buildx imagetools create $tag \
-              $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
-          done <<< "$TAGS"
+          docker buildx imagetools create $(echo "$TAGS" | awk '{print "-t "$0}' | paste -sd' ' -) \
+            $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
         env:
-          TAGS: ${{ steps.meta-devenv.meta.tags }}
+          TAGS: ${{ steps.meta-devenv.outputs.tags }}
