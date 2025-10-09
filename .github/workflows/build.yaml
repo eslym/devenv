@@ -88,5 +88,7 @@ jobs:
       - name: Create and push manifest
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create ${{ steps.versions.meta.tags }} \
+          docker buildx imagetools create $(echo "$TAGS" | awk '{print "-t "$0}' | paste -sd' ' -) \
             $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
+        env:
+          TAGS: ${{ steps.versions.meta.tags }}
