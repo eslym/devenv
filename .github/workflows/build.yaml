@@ -37,6 +37,14 @@ jobs:
             PHP_VERSION=${{ inputs.php-version }}
           target: base
           outputs: type=image,name=${{ vars.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+      
+      - uses: docker/build-push-action@v6
+        id: build-devenv
+        with:
+          build-args: |
+            PHP_VERSION=${{ inputs.php-version }}
+          target: devenv
+          outputs: type=image,name=${{ vars.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -44,11 +52,25 @@ jobs:
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
+      - name: Export digest (devenv)
+        run: |
+          mkdir -p /tmp/digests-devenv
+          digest="${{ steps.build-devenv.outputs.digest }}"
+          touch "/tmp/digests-devenv/${digest#sha256:}"
+
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ github.sha }}-${{ matrix.platform }}
+          name: digests-${{ github.sha }}-base-${{ matrix.platform }}
           path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload digest (devenv)
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ github.sha }}-devenv-${{ matrix.platform }}
+          path: /tmp/digests-devenv/*
           if-no-files-found: error
           retention-days: 1
 
@@ -61,7 +83,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-*
+          pattern: digests-${{ github.sha }}-base-*
+          merge-multiple: true
+
+      - name: Download digests (devenv)
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests-devenv
+          pattern: digests-${{ github.sha }}-devenv-*
           merge-multiple: true
 
       - name: Docker meta
@@ -72,6 +101,19 @@ jobs:
             ${{ vars.IMAGE_NAME }}
           flavor: |
             latest=false
+          tags: |
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.php-version }}
+            type=semver,pattern={{version}},value=${{ inputs.php-version }}
+
+      - name: Docker meta (devenv)
+        id: meta-devenv
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ vars.IMAGE_NAME }}
+          flavor: |
+            latest=false
+            suffix=-devenv
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.php-version }}
             type=semver,pattern={{version}},value=${{ inputs.php-version }}
@@ -88,7 +130,19 @@ jobs:
       - name: Create and push manifest
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create $(echo "$TAGS" | awk '{print "-t "$0}' | paste -sd' ' -) \
-            $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
+          while IFS= read -r tag; do
+            docker buildx imagetools create $tag \
+              $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
+          done <<< "$TAGS"
         env:
           TAGS: ${{ steps.versions.meta.tags }}
+      
+      - name: Create and push manifest (devenv)
+        working-directory: /tmp/digests-devenv
+        run: |
+          while IFS= read -r tag; do
+            docker buildx imagetools create $tag \
+              $(printf '${{ vars.IMAGE_NAME }}@sha256:%s ' *)
+          done <<< "$TAGS"
+        env:
+          TAGS: ${{ steps.meta-devenv.meta.tags }}
