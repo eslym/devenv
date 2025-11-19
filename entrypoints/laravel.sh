@@ -12,7 +12,7 @@ if [ ! -f /dev/shm/container-started ]; then
     cd /app
 
     if [ ! -f /usr/local/etc/php/php.ini ]; then
-        /app/docker/gen-ini.sh > /usr/local/etc/php/php.ini
+        /entrypoints/gen-ini.sh > /usr/local/etc/php/php.ini
     fi
 
     # Ensure the structure of the storage directory
