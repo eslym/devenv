@@ -10,8 +10,8 @@ apt -y install --no-install-recommends \
     unzip \
     libzip-dev \
     libpng-dev \
-    libjpeg-dev \
-    libwebp-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
     libpq-dev \
     imagemagick \
     libmagickwand-dev \
@@ -22,7 +22,8 @@ locale-gen
 update-locale LANG=en_US.UTF-8
 
 docker-php-ext-configure pcntl --enable-pcntl
-docker-php-ext-install -j$(nproc) pdo_mysql pdo_pgsql zip pcntl bcmath opcache
+docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
+docker-php-ext-install -j$(nproc) gd pdo_mysql pdo_pgsql zip pcntl bcmath opcache
 
 pecl install redis-${PHP_REDIS_VERSION} imagick-${IMAGICK_VERSION}
 docker-php-ext-enable redis imagick
@@ -33,3 +34,5 @@ mkdir -p /app /data/caddy /config/caddy
 
 cp -r /tmp/entrypoints /entrypoints
 chmod +x /entrypoints/*
+
+mv /entrypoints/as-web.sh /usr/local/bin/as-web
