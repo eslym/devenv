@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 apt update
 apt -y upgrade
@@ -22,7 +23,7 @@ docker-php-ext-enable xdebug
 useradd --shell /bin/bash --create-home --home-dir /home/devenv --uid 1000 -U devenv
 echo "devenv ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-curl -fsSL https://deb.nodesource.com/setup_23.x -o /tmp/nodesource_setup.sh
+curl -fsSL https://deb.nodesource.com/setup_24.x -o /tmp/nodesource_setup.sh
 chmod +x /tmp/nodesource_setup.sh
 bash -E /tmp/nodesource_setup.sh
 
