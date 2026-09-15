@@ -22,8 +22,16 @@ locale-gen
 update-locale LANG=en_US.UTF-8
 
 docker-php-ext-configure pcntl --enable-pcntl
-docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
-docker-php-ext-install -j$(nproc) gd pdo_mysql pdo_pgsql zip pcntl bcmath opcache
+docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
+
+extensions=(gd pdo_mysql pdo_pgsql zip pcntl bcmath)
+
+# OPcache is built into PHP starting with 8.5.
+if php -r 'exit(PHP_VERSION_ID < 80500 ? 0 : 1);'; then
+    extensions+=(opcache)
+fi
+
+docker-php-ext-install -j"$(nproc)" "${extensions[@]}"
 
 pecl install redis-${PHP_REDIS_VERSION} imagick-${IMAGICK_VERSION}
 docker-php-ext-enable redis imagick

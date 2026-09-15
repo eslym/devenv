@@ -18,8 +18,8 @@ FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION} AS base
 
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
-ARG PHP_REDIS_VERSION=6.2.0
-ARG IMAGICK_VERSION=3.8.0
+ARG PHP_REDIS_VERSION=6.3.0
+ARG IMAGICK_VERSION=3.8.1
 
 RUN --mount=type=bind,source=./scripts/php-base.sh,target=/tmp/scripts/php-base.sh,ro \
     --mount=type=bind,source=./entrypoints,target=/tmp/entrypoints,ro \
