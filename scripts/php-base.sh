@@ -33,7 +33,8 @@ fi
 
 docker-php-ext-install -j"$(nproc)" "${extensions[@]}"
 
-pecl install redis-${PHP_REDIS_VERSION} imagick-${IMAGICK_VERSION}
+pecl install "https://pecl.php.net/get/redis-${PHP_REDIS_VERSION}.tgz"
+pecl install "imagick-${IMAGICK_VERSION}"
 docker-php-ext-enable redis imagick
 
 setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp
