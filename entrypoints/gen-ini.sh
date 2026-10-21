@@ -1,19 +1,11 @@
 #!/usr/bin/env bash
 
-configs=(
-  "upload_max_filesize"
-  "max_file_uploads"
-  "post_max_size"
-  "error_reporting"
-  "display_errors"
-  "max_execution_time"
-  "memory_limit"
-)
-
-for config in "${configs[@]}"; do
-  env_name="PHP_${config^^}"
-  if [[ -n "${!env_name}" ]]; then
-    echo "$config = ${!env_name}"
+while IFS= read -r env_name; do
+  config=${env_name#PHP_}
+  config=${config,,}
+  config=${config//__/\.}
+  value=${!env_name}
+  if [[ -n "$value" ]]; then
+    echo "$config = $value"
   fi
-done
-
+done < <(compgen -e PHP_ | sort)
