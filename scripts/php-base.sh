@@ -17,6 +17,10 @@ apt -y install --no-install-recommends \
     libmagickwand-dev \
     locales
 
+curl -fsSL https://github.com/php/pie/releases/latest/download/pie.phar \
+    -o /usr/local/bin/pie
+chmod +x /usr/local/bin/pie
+
 sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
 update-locale LANG=en_US.UTF-8
@@ -33,9 +37,8 @@ fi
 
 docker-php-ext-install -j"$(nproc)" "${extensions[@]}"
 
-pecl install "https://pecl.php.net/get/redis-${PHP_REDIS_VERSION}.tgz"
-pecl install "imagick-${IMAGICK_VERSION}"
-docker-php-ext-enable redis imagick
+pie install --no-cache "phpredis/phpredis:${PHP_REDIS_VERSION}" \
+    "imagick/imagick:${IMAGICK_VERSION}"
 
 setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp
 

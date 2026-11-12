@@ -17,8 +17,7 @@ apt -y install git \
                psutils \
                nano
 
-pecl install xdebug
-docker-php-ext-enable xdebug
+pie install --no-cache xdebug/xdebug
 
 useradd --shell /bin/bash --create-home --home-dir /home/devenv --uid 1000 -U devenv
 echo "devenv ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers

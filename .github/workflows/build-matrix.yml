@@ -1,0 +1,22 @@
+name: Build PHP version matrix
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dispatch-builds:
+    name: Dispatch PHP builds
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Trigger image build workflow for each PHP version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          REF: ${{ github.ref_name }}
+        run: |
+          for version in 8.2.35 8.3.36 8.4.27 8.5.12; do
+            gh workflow run build.yaml --ref "$REF" --field "php-version=$version"
+          done

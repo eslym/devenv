@@ -27,8 +27,13 @@ To build the WSL image instead:
 docker build --target wsl -t eslym/php:wsl .
 ```
 
+GitHub Actions dispatches the existing `build.yaml` publishing workflow for
+PHP 8.2.35, 8.3.36, 8.4.27, and 8.5.12 when manually run.
+
 Build arguments in `Dockerfile` select the FrankenPHP, PHP, Composer, Bun,
 Stacker, regctl, Redis extension, and Imagick extension versions.
+The base image also includes the `pie` command for installing additional PHP
+extensions in downstream images.
 
 ## Running
 
@@ -93,6 +98,10 @@ The base image installs the PHP extensions `gd`, `pdo_mysql`, `pdo_pgsql`,
 versions earlier than 8.5 (it is built into PHP 8.5 and later). The development
 stage also includes Xdebug, Git, MariaDB and Redis clients, Node.js, Bun,
 `stacker`, and `regctl`.
+
+Third-party extensions are installed with [PIE](https://github.com/php/pie).
+PIE is kept at `/usr/local/bin/pie` in the base image, so downstream builds can
+use it to install further extensions.
 
 ## Tests
 
