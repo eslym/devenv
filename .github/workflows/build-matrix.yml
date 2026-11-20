@@ -17,6 +17,6 @@ jobs:
           GH_REPO: ${{ github.repository }}
           REF: ${{ github.ref_name }}
         run: |
-          for version in 8.2.35 8.3.36 8.4.27 8.5.12; do
+          for version in 8.2.36 8.3.37 8.4.28 8.5.13; do
             gh workflow run build.yaml --ref "$REF" --field "php-version=$version"
           done
