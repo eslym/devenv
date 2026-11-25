@@ -21,6 +21,7 @@ while IFS= read -r env_name; do
 done < <(compgen -e PHP_ | sort)
 
 while IFS= read -r env_name; do
+  [[ "$env_name" == PHP_INI_DIR ]] && continue
   config=${env_name#PHP_INI_}
   config=${config,,}
   config=${config//__/\.}
